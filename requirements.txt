@@ -3,5 +3,6 @@ fpdf
 requests
 beautifulsoup4
 PyQtChart
+pyperclip
 
 
