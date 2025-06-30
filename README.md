@@ -39,7 +39,3 @@ To set up and activate a virtual environment:
    `python3 final_gui_wlcpage.py`
 
 When you're finished working on your project, you can deactivate the virtual environment by simply typing deactivate in your terminal.
-
-# Refactored code
-
-Now the code is much modulated and all the functionalty is separated into its own module(leads.py, metabase.py, contacts.py, etc).

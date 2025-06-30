@@ -124,8 +124,8 @@ class ActionsTab(QWidget):
             ("Leads Template",
              """📋 Ve a Borja Smart list.
              ✅ Asegúrate que el estado sea 'enquiry-received' y la fecha sea -1 día hábil.
-             ✉️ Copia el correo en el cuadro de texto; la plantilla se generará y copiará automáticamente.
-             ⚠️ Si ocurre algún problema, la aplicación mostrará un error y no copiará una plantilla errónea."""),
+             Copia el correo en el cuadro de texto; la plantilla se generará y copiará automáticamente.
+             Si ocurre algún problema, la aplicación mostrará un error y no copiará una plantilla errónea."""),
 
             ("Leads I-Sent",
              """🔎 Ve a la pestaña 'Leads I-sent'.
@@ -136,13 +136,13 @@ class ActionsTab(QWidget):
             ("Contacts",
              """👥 Ve a la pestaña 'Contacts'.
              📂 Selecciona el archivo CSV de contactos que quieres procesar.
-             ➡️ Haz clic en 'Initialize Process' para cargar los datos.
+             Haz clic en 'Initialize Process' para cargar los datos.
              🖱️ Usa el botón 'Copy Next Email' para obtener cada correo de seguimiento de forma secuencial."""),
             
             ("Metabase",
              """📊 Ve a la pestaña 'Metabase'.
-             ⚙️ Rellena los detalles de la máquina (Precio, Link, Nombre) y selecciona el archivo CSV de Metabase.
-             ▶️ Haz clic en 'Initialize Process'.
+             Rellena los detalles de la máquina (Precio, Link, Nombre) y selecciona el archivo CSV de Metabase.
+             Haz clic en 'Initialize Process'.
              📋 Usa 'Copy Next Email' para generar y copiar cada correo para los leads."""),
 
             ("HTML2Text",

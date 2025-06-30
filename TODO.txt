@@ -1,0 +1,2 @@
+- Solve crash errors, urllib3 and font errors so that console output is 
+much more cleaner
