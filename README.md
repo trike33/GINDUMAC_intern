@@ -39,3 +39,7 @@ To set up and activate a virtual environment:
    `python3 final_gui_wlcpage.py`
 
 When you're finished working on your project, you can deactivate the virtual environment by simply typing deactivate in your terminal.
+
+# MAIN files
+
+Please note there are 2 different main files, 1 is dedicated to macOS due to split view issues(`main_gui_mac.py`) while the other one is quite generic(works on ubuntu yet don't know if it will work on windows too).
