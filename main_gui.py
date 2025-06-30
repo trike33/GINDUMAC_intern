@@ -119,63 +119,39 @@ class MainWindow(QMainWindow):
         self.insert_output("Welcome to the Integrated Email Tools!\n" + "="*70 + "\n")
 
     def apply_stylesheet(self, dark_mode=False):
-        if dark_mode:
-            bg_color, pane_bg, border_color = "#2E2E2E", "#3C3C3C", "#555555"
-            tab_bg, tab_selected_bg = "#4A4A4A", "#3C3C3C"
-            text_color, text_color_selected = "#E0E0E0", "#FFFFFF"
-            groupbox_bg = "#2E2E2E"
-            button_bg, button_hover, button_pressed = "#00C7B1", "#00A997", "#008B7D"
-            input_bg, console_bg, console_text = "#3C3C3C", "#252525", "#E0E0E0"
-        else:
-            bg_color, pane_bg, border_color = "#f0f0f0", "#ffffff", "#ccc"
-            tab_bg, tab_selected_bg = "#e0e0e0", "#ffffff"
-            text_color, text_color_selected = "#003366", "#003366"
-            groupbox_bg = "#f0f0f0"
-            button_bg, button_hover, button_pressed = "#0078D7", "#005A9E", "#004578"
-            input_bg, console_bg, console_text = "#ffffff", "#e8f0f7", "#003366"
+            # 1. Define the color palettes
+            if dark_mode:
+                colors = {
+                    "bg_color": "#2E2E2E", "pane_bg": "#3C3C3C", "border_color": "#555555",
+                    "tab_bg": "#4A4A4A", "tab_selected_bg": "#3C3C3C", "text_color": "#E0E0E0",
+                    "text_color_selected": "#FFFFFF", "groupbox_bg": "#2E2E2E",
+                    "button_bg": "#00C7B1", "button_hover": "#00A997", "button_pressed": "#008B7D",
+                    "input_bg": "#3C3C3C", "console_bg": "#252525", "console_text": "#E0E0E0",
+                    "item_selected_bg": "#0078D7", "arrow_color": "dark"
+                }
+            else:
+                colors = {
+                    "bg_color": "#f0f0f0", "pane_bg": "#ffffff", "border_color": "#ccc",
+                    "tab_bg": "#e0e0e0", "tab_selected_bg": "#ffffff", "text_color": "#003366",
+                    "text_color_selected": "#003366", "groupbox_bg": "#f0f0f0",
+                    "button_bg": "#0078D7", "button_hover": "#005A9E", "button_pressed": "#004578",
+                    "input_bg": "#ffffff", "console_bg": "#e8f0f7", "console_text": "#003366",
+                    "item_selected_bg": "#0078D7", "arrow_color": "light"
+                }
 
-        self.theme_button.setText("Light Mode" if dark_mode else "Dark Mode")
-        
-        self.setStyleSheet(f"""
-            QMainWindow, QDialog {{ background-color: {bg_color}; }}
-            QLabel, QCheckBox {{ color: {text_color}; }}
-            QTabWidget::pane {{ border: 1px solid {border_color}; background-color: {pane_bg}; }}
-
-            QWidget#logContainer {{ background-color: {pane_bg}; }}
-            QTabWidget#innerTabWidget::pane {{ background-color: {pane_bg}; border: none; }}
+            self.theme_button.setText("Light Mode" if dark_mode else "Dark Mode")
             
-            QTabBar::tab {{
-                background: {tab_bg}; border: 1px solid {border_color};
-                border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px;
-                min-width: 120px; padding: 10px; font-weight: bold; color: {text_color};
-            }}
-            QTabBar::tab:selected {{ background: {tab_selected_bg}; color: {text_color_selected}; }}
-            QGroupBox {{
-                border: 1px solid {border_color}; border-radius: 5px; margin-top: 1ex;
-                font-weight: bold; color: {text_color};
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin; subcontrol-position: top center;
-                padding: 0 5px; background-color: {groupbox_bg}; color: {button_bg};
-            }}
-            QPushButton {{
-                background-color: {button_bg}; color: white; border-radius: 5px;
-                padding: 8px 15px; font-weight: bold; border: none;
-            }}
-            QPushButton:hover {{ background-color: {button_hover}; }}
-            QPushButton:pressed {{ background-color: {button_pressed}; }}
-            QPushButton:disabled {{ background-color: #555; color: #999; }}
-            QLineEdit, QTextEdit {{
-                border: 1px solid {border_color}; border-radius: 3px; padding: 5px;
-                background-color: {input_bg}; color: {text_color};
-            }}
-            QTextEdit#output_console {{ background-color: {console_bg}; color: {console_text}; }}
-            QProgressBar {{
-                border: 1px solid {border_color}; border-radius: 5px; text-align: center;
-                background-color: {pane_bg}; color: {text_color};
-            }}
-            QProgressBar::chunk {{ background-color: {button_bg}; border-radius: 4px; }}
-        """)
+            # 2. Read the stylesheet template from the file
+            try:
+                with open("resources/stylesheet.qss", "r") as f:
+                    stylesheet_template = f.read()
+            except FileNotFoundError:
+                print("Error: stylesheet.qss not found. Make sure it's in the same directory as main_gui.py.")
+                return
+                
+            # 3. Fill in the placeholders with the chosen colors and apply it
+            final_stylesheet = stylesheet_template.format(**colors)
+            self.setStyleSheet(final_stylesheet)
 
 
     def toggle_dark_mode(self):
