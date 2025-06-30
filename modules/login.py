@@ -7,7 +7,7 @@ import hashlib
 import json
 import os
 
-CREDENTIALS_FILE = "credentials.json"
+CREDENTIALS_FILE = "other/credentials.json"
 
 class LoginDialog(QDialog):
     def __init__(self):

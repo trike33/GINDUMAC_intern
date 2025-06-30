@@ -17,7 +17,7 @@ class EmailSentTab(QWidget):
         }
         self.click_counts = {"English": 0, "Italian": 0, "French": 0}
         self.timestamp_written = False
-        self.URLS_FILE = "urls.txt"
+        self.URLS_FILE = "other/urls.txt"
         self.init_ui()
         self.load_url_preview()
         self.update_counters()

@@ -33,7 +33,7 @@ def get_seller_followup_email_generator(csv_path, start_email_str=None):
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File not found: {csv_path}")
 
-    seller_templates = load_templates('seller_templates.json')
+    seller_templates = load_templates('templates/seller_templates.json')
     start_output = False if start_email_str else True
     
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
@@ -82,7 +82,7 @@ def get_lead_email_generator(csv_path, price, link, machine):
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File not found: {csv_path}")
 
-    lead_templates = load_templates('lead_templates.json')
+    lead_templates = load_templates('templates/lead_templates.json')
 
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)

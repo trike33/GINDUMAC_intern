@@ -274,11 +274,17 @@ class HtmlToTextTab(QWidget):
         self.progress_bar.setValue(0)
         self.output_text_area.clear()
 
-    def stop_thread(self):
+    def reset_process(self):
+        """
+        A dedicated method to safely stop the worker thread.
+        This is called by the main window's closeEvent.
+        """
+        print("Attempting to stop thread for HtmlToTextTab...")
         if hasattr(self, 'thread') and self.thread.isRunning():
             self.thread.quit()
-            self.thread.wait()
-
-    def closeEvent(self, event):
-        self.stop_thread()
-        super().closeEvent(event)
+            # Wait for 3 seconds for a graceful shutdown
+            if not self.thread.wait(3000):
+                print("HtmlToTextTab thread is unresponsive, terminating it.")
+                self.thread.terminate() # Force termination
+                self.thread.wait() # Wait for termination to complete
+            print("HtmlToTextTab thread stopped.")

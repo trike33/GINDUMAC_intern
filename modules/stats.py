@@ -20,7 +20,7 @@ from PyQt5.QtChart import (
     QLineSeries
 )
 
-DATA_FILE = Path("stats_progress.json")
+DATA_FILE = Path("other/stats_progress.json")
 
 
 def clean_text_for_pdf(text):
@@ -466,7 +466,7 @@ class StatisticsTab(QWidget):
         self.init_ui()
         self.load_data()
         self.update_ui_for_date(self.current_date)
-        self.stats_file = "stats_progress.json"
+        self.stats_file = "other/stats_progress.json"
 
     def init_ui(self):
         layout = QVBoxLayout(self)

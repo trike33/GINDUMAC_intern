@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QTextEdit, QFrame, QGroupBox, QTabWidget,
     QDialog, QSizePolicy
 )
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QFont
 
 # Ensure pyperclip is installed
@@ -31,6 +31,9 @@ from modules.welcome import WelcomeWindow
 
 
 class MainWindow(QMainWindow):
+    # Signal to notify other widgets when the theme has changed.
+    theme_changed = pyqtSignal(bool)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Integrated Email Tools")
@@ -86,9 +89,13 @@ class MainWindow(QMainWindow):
             "Instructions": ActionsTab,
             "HTML2Text": HtmlToTextTab
         }
+
+        # List of tabs that need a reference to the main window for themes or other callbacks
+        tabs_needing_main_window = ["Instructions", "Temporal Logs"]
+
         for name, TabClass in tabs.items():
-            # Pass main_window reference if the tab needs it (e.g., ActionsTab)
-            if name == "Instructions":
+            # Pass main_window reference if the tab's name is in the list
+            if name in tabs_needing_main_window:
                 tab = TabClass(self.notebook, main_window=self)
             else:
                 tab = TabClass(self.notebook)
@@ -133,6 +140,10 @@ class MainWindow(QMainWindow):
             QMainWindow, QDialog {{ background-color: {bg_color}; }}
             QLabel, QCheckBox {{ color: {text_color}; }}
             QTabWidget::pane {{ border: 1px solid {border_color}; background-color: {pane_bg}; }}
+
+            QWidget#logContainer {{ background-color: {pane_bg}; }}
+            QTabWidget#innerTabWidget::pane {{ background-color: {pane_bg}; border: none; }}
+            
             QTabBar::tab {{
                 background: {tab_bg}; border: 1px solid {border_color};
                 border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px;
@@ -170,6 +181,8 @@ class MainWindow(QMainWindow):
     def toggle_dark_mode(self):
         self.is_dark_mode = not self.is_dark_mode
         self.apply_stylesheet(self.is_dark_mode)
+        # Emit the signal to notify all listening widgets of the theme change
+        self.theme_changed.emit(self.is_dark_mode)
 
     def open_welcome_window(self):
         if not hasattr(self, 'welcome_win') or not self.welcome_win.isVisible():

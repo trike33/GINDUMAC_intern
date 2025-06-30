@@ -5,7 +5,7 @@ import re
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                              QTextEdit, QMessageBox, QDialog, QDialogButtonBox,
                              QTableWidget, QTableWidgetItem, QHeaderView, QComboBox,
-                             QFormLayout, QLineEdit)
+                             QFormLayout, QLineEdit, QTabWidget, QListWidget)
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 import pyperclip
 
@@ -55,8 +55,8 @@ class LeadsTab(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.used_templates = []
-        self.templates_file = "templates.json"
-        self.rules_file = "parsing_rules.json"
+        self.templates_file = "templates/templates.json"
+        self.rules_file = "regex/parsing_rules.json"
         self.load_templates()
         self.load_rules()
         self.init_ui()
@@ -286,6 +286,7 @@ class TemplateManagerDialog(QDialog):
         self.setMinimumSize(800, 600)
         self.layout = QVBoxLayout(self)
         self.tab_widget = QTabWidget()
+        self.tab_widget.setObjectName("innerTabWidget") # <-- FIX IS HERE
         self.layout.addWidget(self.tab_widget)
         self.template_lists = {}
         self.template_editors = {}
@@ -351,4 +352,3 @@ class TemplateManagerDialog(QDialog):
             self.template_editors[lang].clear()
     def get_updated_templates(self):
         return self.templates
-
