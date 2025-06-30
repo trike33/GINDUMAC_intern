@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Detect Language: French",
+    "type": "language_detect",
+    "value": "fr",
+    "pattern": "bonjour|votre intérêt|localisation"
+  },
+  {
+    "name": "Detect Language: Italian",
+    "type": "language_detect",
+    "value": "it",
+    "pattern": "buongiorno|gentile|località|interesse per"
+  },
+  {
+    "name": "Extract: Client Name",
+    "type": "extraction",
+    "value": "name",
+    "pattern": "(?:Dear|Hello|Bonjour|Cher|Gentile|Ciao)\\s+([\\w\\s.'-]+?)\\s*,"
+  },
+  {
+    "name": "Extract: Machine Name",
+    "type": "extraction",
+    "value": "machine",
+    "pattern": "(?:interest in our machine|machine|votre intérêt pour notre machine|interesse per (?:la|la nostra) macchina)\\s*:\\s*([^\\r\\n]*)"
+  },
+  {
+    "name": "Extract: Location",
+    "type": "extraction",
+    "value": "location",
+    "pattern": "(?:Location|Localisation|Località)\\s*:\\s*([^\\r\\n]*)"
+  }
+]

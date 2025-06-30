@@ -1,0 +1,7 @@
+PyQt5
+fpdf
+requests
+beautifulsoup4
+PyQtChart
+pyperclip
+cryptography

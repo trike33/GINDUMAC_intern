@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt
 from cryptography.fernet import Fernet, InvalidToken
 from hashlib import pbkdf2_hmac
 import base64
-from PyQt5.QtGui import QFont
+
 
 class LogEntryWidget(QWidget):
     def __init__(self, timestamp, message, encrypted, key_callback):
@@ -24,58 +24,47 @@ class LogEntryWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
-            # Set the container's background color
-            bg_color = "#ffecf1" if self.encrypted else "#e0f7fa"
-            self.setStyleSheet(f"""
-                QWidget {{
-                    background-color: {bg_color};
-                    border-radius: 10px;
-                    padding: 10px;
-                    margin-bottom: 10px;
-                }}
+        self.setStyleSheet("""
+            QWidget {
+                border-radius: 10px;
+                padding: 10px;
+                margin-bottom: 10px;
+                font-size: 13pt;
+                font-family: 'Segoe UI', sans-serif;
+            }
+        """)
+        bg_color = "#ffecf1" if self.encrypted else "#e0f7fa"
+        self.setStyleSheet(self.styleSheet() + f"background-color: {bg_color};")
+
+        layout = QHBoxLayout()
+        self.setLayout(layout)
+
+        self.label = QLabel()
+        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.label.setWordWrap(True)
+        layout.addWidget(self.label, stretch=1)
+
+        if self.encrypted:
+            self.label.setText(f"{self.timestamp}: *************")
+            self.decrypt_btn = QPushButton("Decrypt")
+            self.decrypt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #ff4081;
+                    color: white;
+                    border: none;
+                    padding: 6px 12px;
+                    border-radius: 5px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #f50057;
+                }
             """)
-
-            layout = QHBoxLayout()
-            self.setLayout(layout)
-
-            self.label = QLabel()
-            
-            # --- THIS IS THE DEFINITIVE FIX ---
-            # Use QPalette to force the text color to black
-            palette = self.label.palette()
-            palette.setColor(self.label.foregroundRole(), Qt.black)
-            self.label.setPalette(palette)
-            
-            # Set font separately
-            font = QFont('Segoe UI', 13)
-            self.label.setFont(font)
-            # --- END OF FIX ---
-            
-            self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-            self.label.setWordWrap(True)
-            layout.addWidget(self.label, stretch=1)
-
-            if self.encrypted:
-                self.label.setText(f"{self.timestamp}: *************")
-                self.decrypt_btn = QPushButton("Decrypt")
-                self.decrypt_btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #ff4081;
-                        color: white;
-                        border: none;
-                        padding: 6px 12px;
-                        border-radius: 5px;
-                        font-weight: bold;
-                    }
-                    QPushButton:hover {
-                        background-color: #f50057;
-                    }
-                """)
-                self.decrypt_btn.setMaximumWidth(120)
-                self.decrypt_btn.clicked.connect(self.decrypt_message)
-                layout.addWidget(self.decrypt_btn)
-            else:
-                self.label.setText(f"{self.timestamp}: {self.plain_message}")
+            self.decrypt_btn.setMaximumWidth(120)
+            self.decrypt_btn.clicked.connect(self.decrypt_message)
+            layout.addWidget(self.decrypt_btn)
+        else:
+            self.label.setText(f"{self.timestamp}: {self.plain_message}")
 
     def decrypt_message(self):
         pwd, ok = QInputDialog.getText(self, "Password", "Enter password to decrypt:", QLineEdit.Password)
