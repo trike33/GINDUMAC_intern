@@ -2,7 +2,8 @@ import sys
 import pyautogui
 import platform
 import time
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
+# NEW: Import QInputDialog for the selection dialog
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout, QInputDialog
 from PyQt5.QtCore import Qt
 
 # A simple dark theme for when the bot is launched from a dark-themed parent
@@ -40,9 +41,6 @@ class AutomationStepper(QWidget):
         self.reference_width = 1920
         self.reference_height = 1080
         self.screen_width, self.screen_height = pyautogui.size()
-        #print(f"CRITICAL INFORMATION: THIS SCRIPT MUST BE USED WITH A FIREFOX BROWSER AT 80% OF ZOOM + SPLIT VIEW")
-        #print(f"Reference screen size: {self.reference_width}x{self.reference_height}")
-        #print(f"Current screen size: {self.screen_width}x{self.screen_height}")
 
         self.current_step = 0
         self.command_key = "command" if platform.system() == "Darwin" else "ctrl"
@@ -53,7 +51,6 @@ class AutomationStepper(QWidget):
     def apply_dark_mode_stylesheet(self):
         """Applies a simple dark theme to the widget."""
         self.setStyleSheet(DARK_STYLESHEET)
-        # Also update the display for dark mode text color
         self.update_display()
 
     def scale_coords(self, x, y):
@@ -69,17 +66,17 @@ class AutomationStepper(QWidget):
 
     def define_steps(self):
         steps = [
-            {"desc": "Focus Left & Click at (278, 292)", "func": self.action_focus_left_and_click_1},
-            {"desc": "Execute Main Sequence (Click, Copy, Paste on Right)", "func": self.execute_main_sequence},
-            {"desc": "Focus Left, Double Click, then Click & Paste", "func": self.action_focus_left_and_perform_sequence, "jump_target": True},
-            {"desc": "Click at (921, 1063)", "func": lambda: pyautogui.click(*self.scale_coords(921, 1063), duration=1)},
-            {"desc": "Click at (207, 344) & (207, 414)", "func": self.double_click_action_2},
-            {"desc": "Click at (155, 171)", "func": lambda: pyautogui.click(*self.scale_coords(155, 171), duration=1)},
+            {"title": "1. Abrir lead nuevo", "desc": "Focus Left & Click at (278, 292)", "func": self.action_focus_left_and_click_1},
+            {"title": "2. Expandir, copiar y procesar el ULTIMO mail", "desc": "Lo ultimo de la conversacion debe ser el mail a procesar! Incluye delays de 3s", "func": self.execute_main_sequence},
+            {"title": "3. 3 puntos, reply y pegamos la respuesta", "desc": "Focus Left, Double Click, then Click & Paste (incluye delays de 3s)", "func": self.action_focus_left_and_perform_sequence},
+            {"title": "4. Le damos a send y cambiamos el status a i-email-sent", "desc": "Click, wait 3s, then click twice more", "func": self.combined_click_action},
+            {"title": "5. Volvemos a la pagina principal de los leads", "desc": "Click at (155, 171)", "func": lambda: pyautogui.click(*self.scale_coords(155, 171), duration=1)},
+            {"title": "6. Scroll Down to next lead", "desc": "Simulate scrolling down via mouse drag", "func": self.action_simulated_scroll},
         ]
         return steps
 
     def init_ui(self):
-        self.setWindowTitle('PyAutoGUI Stepper (Dynamic & Endless)')
+        self.setWindowTitle('Leads Bot (Dynamic & Endless)')
         self.setGeometry(300, 300, 500, 500)
         
         layout = QVBoxLayout()
@@ -90,14 +87,15 @@ class AutomationStepper(QWidget):
         
         button_layout = QHBoxLayout()
         
-        prev_button = QPushButton('⬅️ Previous (Left Arrow)')
+        prev_button = QPushButton('Previous (Left Arrow)')
         prev_button.clicked.connect(self.prev_step)
         
-        next_button = QPushButton('Next ➡️ (Right Arrow)')
+        next_button = QPushButton('Next (Right Arrow)')
         next_button.clicked.connect(self.next_step)
 
-        jump_button = QPushButton('🚀 Jump to Paste')
-        jump_button.clicked.connect(self.jump_to_paste)
+        # MODIFIED: Changed button text and connected it to the new jump_to_step method
+        jump_button = QPushButton('Jump to Step...')
+        jump_button.clicked.connect(self.jump_to_step)
         
         button_layout.addWidget(prev_button)
         button_layout.addWidget(next_button)
@@ -115,15 +113,19 @@ class AutomationStepper(QWidget):
             super().keyPressEvent(event)
 
     def update_display(self):
-        is_dark = "dark" in self.styleSheet() # A simple check to see if a dark theme is applied
+        is_dark = "dark" in self.styleSheet() 
         highlight_color = "#00C7B1" if is_dark else "green"
 
         content = "<h1>Automation Steps (Looping)</h1>"
         for i, step in enumerate(self.steps):
+            # NEW: Get the title from the step dictionary
+            title = step.get('title', f"Step {i+1}") # Fallback if title is missing
             if i == self.current_step:
-                content += f"<p><b><font color='{highlight_color}'>➡️ {step['desc']}</font></b></p>"
+                # MODIFIED: Added the title to the display string
+                content += f"<p><b><font color='{highlight_color}'>➡️ {title}:</font></b><br>&nbsp;&nbsp;&nbsp;{step['desc']}</p>"
             else:
-                content += f"<p><font color='gray'>&nbsp;&nbsp;&nbsp;{step['desc']}</font></p>"
+                # MODIFIED: Added the title to the display string
+                content += f"<p><font color='gray'>&nbsp;&nbsp;&nbsp;<b>{title}:</b><br>&nbsp;&nbsp;&nbsp;{step['desc']}</font></p>"
         self.text_display.setHtml(content)
 
     def next_step(self):
@@ -145,13 +147,33 @@ class AutomationStepper(QWidget):
             self.current_step = (self.current_step - 1 + len(self.steps)) % len(self.steps)
             self.update_display()
 
-    def jump_to_paste(self):
-        for i, step in enumerate(self.steps):
-            if step.get("jump_target"):
-                self.current_step = i
+    # MODIFIED: Replaced jump_to_paste with jump_to_step
+    def jump_to_step(self):
+        """
+        Opens a dialog to allow the user to select an arbitrary step to jump to.
+        """
+        if not self.steps:
+            return
+
+        # 1. Create a list of step descriptions for the user to choose from.
+        step_descriptions = [step['title'] for step in self.steps]
+        
+        # 2. Show the input dialog with the list of steps.
+        item, ok = QInputDialog.getItem(self, "Jump to Step", 
+                                        "Select a step to jump to:", step_descriptions, self.current_step, False)
+        
+        # 3. If the user clicked "OK" and selected an item, find its index and update the current step.
+        if ok and item:
+            # Find the index of the selected description
+            try:
+                new_index = step_descriptions.index(item)
+                self.current_step = new_index
                 self.update_display()
-                print(f"Jumped to step {i}: {step['desc']}")
-                return
+                print(f"Jumped to step {self.current_step}: {self.steps[self.current_step]['title']}")
+            except ValueError:
+                # This should not happen if the item comes from the list, but it's good practice
+                print(f"Error: Could not find step '{item}'.")
+
             
     def action_focus_left_and_click_1(self):
         pyautogui.click(*self.scale_coords(869, 47), duration=0.5)
@@ -195,6 +217,34 @@ class AutomationStepper(QWidget):
     def double_click_action_2(self):
         pyautogui.click(*self.scale_coords(207, 344), duration=1)
         pyautogui.click(*self.scale_coords(207, 414), duration=1)
+
+    def combined_click_action(self):
+        """Clicks at three locations with a delay in the middle."""
+        print("Executing combined click action.")
+        # First click from the old step 4
+        pyautogui.click(*self.scale_coords(921, 1063), duration=1)
+        
+        # Add the 3-second delay
+        print("Waiting for 3 seconds...")
+        time.sleep(3)
+        
+        # Clicks from the old step 5
+        pyautogui.click(*self.scale_coords(207, 344), duration=1)
+        pyautogui.click(*self.scale_coords(207, 414), duration=1)
+
+    def action_simulated_scroll(self):
+        """Moves the mouse to a start position and drags to an end position to simulate a scroll."""
+        print("Simulating scroll down.")
+        
+        # Get scaled coordinates for start and end positions
+        start_x, start_y = self.scale_coords(992, 412)
+        end_x, end_y = self.scale_coords(992, 441)
+        
+        # Move to the start position
+        pyautogui.moveTo(start_x, start_y, duration=0.5)
+        
+        # Drag to the end position to simulate the scroll
+        pyautogui.dragTo(end_x, end_y, duration=1, button='left')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

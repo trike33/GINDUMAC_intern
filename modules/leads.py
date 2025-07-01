@@ -63,17 +63,36 @@ class LeadsTab(QWidget):
         self.used_templates = []
         self.templates_file = "templates/templates.json"
         self.rules_file = "regex/parsing_rules.json"
+        self.template_counter = 0
         self.load_templates()
         self.load_rules()
         self.init_ui()
+        self.update_counter_display()
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
+        
+        # --- Top Section Layout ---
+        top_layout = QHBoxLayout()
+        
+        info_layout = QVBoxLayout()
         self.warning_label = QLabel("Warning: Please double check the generated template!")
         self.warning_label.setStyleSheet("font-weight: bold; color: orange;")
-        main_layout.addWidget(self.warning_label)
         title_label = QLabel("Paste the client message below and click 'Generate Template'")
-        main_layout.addWidget(title_label)
+        info_layout.addWidget(self.warning_label)
+        info_layout.addWidget(title_label)
+        
+        # NEW: Create and style the counter label
+        self.counter_label = QLabel()
+        self.counter_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.counter_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        
+        top_layout.addLayout(info_layout)
+        top_layout.addWidget(self.counter_label)
+        
+        main_layout.addLayout(top_layout)
+        # --- End of Top Section Layout ---
+
         self.textbox = PasteDetectTextEdit()
         self.textbox.pasted.connect(self.on_paste)
         self.textbox.setPlaceholderText("Paste client message here...")
@@ -119,6 +138,7 @@ class LeadsTab(QWidget):
         warning_message = (
             "CRITICAL INFORMATION:\n\n"
             "THIS SCRIPT MUST BE USED WITH A FIREFOX BROWSER AT 80% OF ZOOM + SPLIT VIEW\n\n"
+            "THE LEADS MUST BE IN INDEX-VIEW(NOT TABLE VIEW)\n\n"
             f"Reference screen size: {reference_width}x{reference_height}\n"
             f"Current screen size: {screen_width}x{screen_height}"
         )
@@ -209,6 +229,8 @@ class LeadsTab(QWidget):
         )
         pyperclip.copy(final_message)
         self.textbox.clear()
+        self.template_counter += 1
+        self.update_counter_display()
         self.update_status("Template generated and copied to clipboard!", color="green")
 
     def select_template(self, language):
@@ -258,6 +280,9 @@ class LeadsTab(QWidget):
         if dialog.exec_() == QDialog.Accepted:
             self.templates = dialog.get_updated_templates()
             self.save_templates()
+    def update_counter_display(self):
+        """Updates the text of the counter label in the UI."""
+        self.counter_label.setText(f"Templates Generated: {self.template_counter}")
 
 class RuleManagerDialog(QDialog):
     def __init__(self, rules, parent=None):
