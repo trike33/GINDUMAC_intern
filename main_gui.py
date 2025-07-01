@@ -90,8 +90,8 @@ class MainWindow(QMainWindow):
             "HTML2Text": HtmlToTextTab
         }
 
-        # List of tabs that need a reference to the main window for themes or other callbacks
-        tabs_needing_main_window = ["Instructions", "Temporal Logs"]
+        # List of tabs that need a reference to the main window
+        tabs_needing_main_window = ["Instructions", "Temporal Logs", "Leads Template"]
 
         for name, TabClass in tabs.items():
             # Pass main_window reference if the tab's name is in the list
@@ -119,39 +119,39 @@ class MainWindow(QMainWindow):
         self.insert_output("Welcome to the Integrated Email Tools!\n" + "="*70 + "\n")
 
     def apply_stylesheet(self, dark_mode=False):
-            # 1. Define the color palettes
-            if dark_mode:
-                colors = {
-                    "bg_color": "#2E2E2E", "pane_bg": "#3C3C3C", "border_color": "#555555",
-                    "tab_bg": "#4A4A4A", "tab_selected_bg": "#3C3C3C", "text_color": "#E0E0E0",
-                    "text_color_selected": "#FFFFFF", "groupbox_bg": "#2E2E2E",
-                    "button_bg": "#00C7B1", "button_hover": "#00A997", "button_pressed": "#008B7D",
-                    "input_bg": "#3C3C3C", "console_bg": "#252525", "console_text": "#E0E0E0",
-                    "item_selected_bg": "#0078D7", "arrow_color": "dark"
-                }
-            else:
-                colors = {
-                    "bg_color": "#f0f0f0", "pane_bg": "#ffffff", "border_color": "#ccc",
-                    "tab_bg": "#e0e0e0", "tab_selected_bg": "#ffffff", "text_color": "#003366",
-                    "text_color_selected": "#003366", "groupbox_bg": "#f0f0f0",
-                    "button_bg": "#0078D7", "button_hover": "#005A9E", "button_pressed": "#004578",
-                    "input_bg": "#ffffff", "console_bg": "#e8f0f7", "console_text": "#003366",
-                    "item_selected_bg": "#0078D7", "arrow_color": "light"
-                }
+        # 1. Define the color palettes
+        if dark_mode:
+            colors = {
+                "bg_color": "#2E2E2E", "pane_bg": "#3C3C3C", "border_color": "#555555",
+                "tab_bg": "#4A4A4A", "tab_selected_bg": "#3C3C3C", "text_color": "#E0E0E0",
+                "text_color_selected": "#FFFFFF", "groupbox_bg": "#2E2E2E",
+                "button_bg": "#00C7B1", "button_hover": "#00A997", "button_pressed": "#008B7D",
+                "input_bg": "#3C3C3C", "console_bg": "#252525", "console_text": "#E0E0E0",
+                "item_selected_bg": "#0078D7", "arrow_color": "dark"
+            }
+        else:
+            colors = {
+                "bg_color": "#f0f0f0", "pane_bg": "#ffffff", "border_color": "#ccc",
+                "tab_bg": "#e0e0e0", "tab_selected_bg": "#ffffff", "text_color": "#003366",
+                "text_color_selected": "#003366", "groupbox_bg": "#f0f0f0",
+                "button_bg": "#0078D7", "button_hover": "#005A9E", "button_pressed": "#004578",
+                "input_bg": "#ffffff", "console_bg": "#e8f0f7", "console_text": "#003366",
+                "item_selected_bg": "#0078D7", "arrow_color": "light"
+            }
 
-            self.theme_button.setText("Light Mode" if dark_mode else "Dark Mode")
+        self.theme_button.setText("Light Mode" if dark_mode else "Dark Mode")
+        
+        # 2. Read the stylesheet template from the file
+        try:
+            with open("resources/stylesheet.qss", "r") as f:
+                stylesheet_template = f.read()
+        except FileNotFoundError:
+            print("Error: stylesheet.qss not found. Make sure it's in the same directory as main_gui.py.")
+            return
             
-            # 2. Read the stylesheet template from the file
-            try:
-                with open("resources/stylesheet.qss", "r") as f:
-                    stylesheet_template = f.read()
-            except FileNotFoundError:
-                print("Error: stylesheet.qss not found. Make sure it's in the same directory as main_gui.py.")
-                return
-                
-            # 3. Fill in the placeholders with the chosen colors and apply it
-            final_stylesheet = stylesheet_template.format(**colors)
-            self.setStyleSheet(final_stylesheet)
+        # 3. Fill in the placeholders with the chosen colors and apply it
+        final_stylesheet = stylesheet_template.format(**colors)
+        self.setStyleSheet(final_stylesheet)
 
 
     def toggle_dark_mode(self):

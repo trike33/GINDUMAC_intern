@@ -9,6 +9,10 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 import pyperclip
 
+# Correctly import the class from the 'bots' folder
+from bots.leads_bot import AutomationStepper
+import pyautogui
+
 class PasteDetectTextEdit(QTextEdit):
     pasted = pyqtSignal()
     def insertFromMimeData(self, source):
@@ -52,8 +56,10 @@ class CorrectionDialog(QDialog):
 class LeadsTab(QWidget):
     output_message = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, main_window=None):
         super().__init__(parent)
+        self.main_window = main_window
+        self.bot_window = None # To hold a reference to the bot window
         self.used_templates = []
         self.templates_file = "templates/templates.json"
         self.rules_file = "regex/parsing_rules.json"
@@ -72,19 +78,72 @@ class LeadsTab(QWidget):
         self.textbox.pasted.connect(self.on_paste)
         self.textbox.setPlaceholderText("Paste client message here...")
         main_layout.addWidget(self.textbox)
+
         button_layout = QHBoxLayout()
         generate_button = QPushButton("Generate Template")
         generate_button.clicked.connect(self.process_text)
+        
         manage_templates_button = QPushButton("Manage Templates")
         manage_templates_button.clicked.connect(self.open_template_manager)
+        
         manage_rules_button = QPushButton("Manage Parsing Rules")
         manage_rules_button.clicked.connect(self.open_rule_manager)
+
+        launch_bot_button = QPushButton("🚀 Launch Leads Bot")
+        launch_bot_button.clicked.connect(self.launch_leads_bot)
+
         button_layout.addWidget(generate_button)
         button_layout.addWidget(manage_templates_button)
         button_layout.addWidget(manage_rules_button)
+        button_layout.addWidget(launch_bot_button)
+
         main_layout.addLayout(button_layout)
         self.status_label = QLabel("")
         main_layout.addWidget(self.status_label)
+
+    def launch_leads_bot(self):
+        """Creates and shows the AutomationStepper window after a warning."""
+        # If the bot window already exists, just show it and bring it to the front
+        if self.bot_window and self.bot_window.isVisible():
+            self.bot_window.activateWindow()
+            self.bot_window.raise_()
+            return
+
+        # --- ADDED SECTION ---
+        # 1. Get screen size information
+        reference_width = 1920
+        reference_height = 1080
+        screen_width, screen_height = pyautogui.size()
+
+        # 2. Create the warning message
+        warning_message = (
+            "CRITICAL INFORMATION:\n\n"
+            "THIS SCRIPT MUST BE USED WITH A FIREFOX BROWSER AT 80% OF ZOOM + SPLIT VIEW\n\n"
+            f"Reference screen size: {reference_width}x{reference_height}\n"
+            f"Current screen size: {screen_width}x{screen_height}"
+        )
+
+        # 3. Show the warning pop-up and check the user's response
+        reply = QMessageBox.warning(self, "Bot Prerequisites", warning_message,
+                                    QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Ok)
+
+        # 4. If user clicks Cancel, stop before creating the window
+        if reply == QMessageBox.Cancel:
+            self.update_status("Bot launch cancelled by user.", color="orange")
+            return
+        # --- END OF ADDED SECTION ---
+
+        self.update_status("Launching Leads Bot...", color="green")
+
+        # Create an instance of the bot window
+        self.bot_window = AutomationStepper()
+
+        # Apply dark mode if the main app is in dark mode
+        if self.main_window and self.main_window.is_dark_mode:
+            self.bot_window.apply_dark_mode_stylesheet()
+
+        self.bot_window.show()
+        self.output_message.emit("Leads Bot launched successfully as a new window.\n")
 
     def on_paste(self):
         QTimer.singleShot(50, self.process_text)
@@ -92,7 +151,7 @@ class LeadsTab(QWidget):
     def update_status(self, message, color="black"):
         self.status_label.setText(message)
         self.status_label.setStyleSheet(f"color: {color};")
-        self.output_message.emit(f"[Leads Tab] {message.splitlines()[0]}...")
+        self.output_message.emit(f"[Leads Tab] {message.splitlines()[0]}...\n")
 
     def detect_language(self, text):
         text_lower = text.lower()
@@ -102,32 +161,22 @@ class LeadsTab(QWidget):
                     return rule.get('value')
         return "en"
 
-    # --- MODIFIED: Parsing is now done on raw text without pre-formatting ---
     def parse_input(self, text):
         results = {"name": "", "machine": "", "location": "", "link": ""}
-        
-        # Apply rules directly to the raw text
         for rule in self.rules:
             if rule.get('type') == 'extraction':
                 field = rule.get('value')
                 pattern = rule.get('pattern')
-                
-                # Only try to fill empty fields
                 if field and pattern and not results.get(field):
                     try:
-                        # Use multiline flag for patterns that use ^ or $
                         match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
                         if match and match.groups():
-                            # Clean up the captured group only
                             results[field] = match.group(1).strip().rstrip('.')
                     except re.error as e:
                         print(f"Regex error in rule '{rule.get('name')}': {e}")
-                        
-        # Find links separately as this is very reliable
         links = re.findall(r"https?://\S+", text)
         if not results['link'] and links:
             results['link'] = links[0]
-            
         return results
 
     def process_text(self):
@@ -286,7 +335,7 @@ class TemplateManagerDialog(QDialog):
         self.setMinimumSize(800, 600)
         self.layout = QVBoxLayout(self)
         self.tab_widget = QTabWidget()
-        self.tab_widget.setObjectName("innerTabWidget") # <-- FIX IS HERE
+        self.tab_widget.setObjectName("innerTabWidget")
         self.layout.addWidget(self.tab_widget)
         self.template_lists = {}
         self.template_editors = {}
@@ -317,19 +366,23 @@ class TemplateManagerDialog(QDialog):
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
         self.layout.addWidget(self.button_box)
+
     def get_current_lang(self):
         return self.tab_widget.tabText(self.tab_widget.currentIndex()).lower()
+
     def display_template(self, item):
         lang = self.get_current_lang()
         index = self.template_lists[lang].row(item)
         if 0 <= index < len(self.templates[lang]):
             self.template_editors[lang].setText(self.templates[lang][index])
+
     def add_template(self):
         lang = self.get_current_lang()
         list_widget = self.template_lists[lang]
         list_widget.addItem(f"New Template {list_widget.count() + 1}")
         self.template_editors[lang].clear()
         self.template_editors[lang].setFocus()
+
     def save_template(self):
         lang = self.get_current_lang()
         list_widget = self.template_lists[lang]
@@ -342,6 +395,7 @@ class TemplateManagerDialog(QDialog):
         else:
             self.templates[lang].append(new_text)
         list_widget.currentItem().setText(f"Template {current_row + 1}")
+
     def delete_template(self):
         lang = self.get_current_lang()
         list_widget = self.template_lists[lang]
@@ -350,5 +404,6 @@ class TemplateManagerDialog(QDialog):
             del self.templates[lang][current_row]
             list_widget.takeItem(current_row)
             self.template_editors[lang].clear()
+
     def get_updated_templates(self):
         return self.templates
