@@ -4,37 +4,53 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QLabel, QPushBut
                              QTextEdit, QGroupBox, QMessageBox)
 from PyQt5.QtCore import pyqtSignal
 import pyperclip
+import json
 
 class EmailSentTab(QWidget):
     output_message = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.templates = {
-            "English": "Hello,\n\nDid you get my offer? Are you still interested?",
-            "Italian": "Ciao,\n\nHai ricevuto la mia offerta? Sei ancora interessato?",
-            "French": "Bonjour,\n\nAvez-vous reçu mon offre ? Êtes-vous toujours intéressé ?"
-        }
-        self.click_counts = {"English": 0, "Italian": 0, "French": 0}
+        self.templates = {} # INICIALIZA COMO DICCIONARIO VACÍO
+        self.click_counts = {} # SE RELLENARÁ DINÁMICAMENTE
         self.timestamp_written = False
         self.URLS_FILE = "other/urls.txt"
+        self.TEMPLATES_FILE = "templates/isent_templates.json" # RUTA AL NUEVO ARCHIVO
+        self.load_templates()
         self.init_ui()
         self.load_url_preview()
         self.update_counters()
+
+    def load_templates(self):
+        try:
+            with open(self.TEMPLATES_FILE, 'r', encoding='utf-8') as f:
+                self.templates = json.load(f)
+            # Inicializa los contadores basados en las claves del archivo JSON
+            self.click_counts = {lang: 0 for lang in self.templates.keys()}
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            self.templates = {"en": ["Default template: please check manager."]}
+            self.click_counts = {"en": 0}
+            QMessageBox.warning(self, "Warning", f"Could not load followup templates: {e}")
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
         btn_frame = QGroupBox("Select Language to Copy Template")
         btn_layout = QGridLayout(btn_frame)
         
-        lang_data = [("🇬🇧 English", "English"), ("🇮🇹 Italian", "Italian"), ("🇫🇷 French", "French")]
         self.count_labels = {}
-        for i, (text, lang) in enumerate(lang_data):
-            button = QPushButton(text)
-            button.clicked.connect(lambda _, l=lang: self.copy_template(l))
-            self.count_labels[lang] = QLabel(f"{lang} clicks: 0")
+        for i, lang_code in enumerate(self.templates.keys()):
+            # Asigna un emoji simple si se reconoce el código
+            emoji_map = {"en": "🇬🇧", "it": "🇮🇹", "fr": "🇫🇷"}
+            emoji = emoji_map.get(lang_code, "🏳️")
+
+            button_text = f"{emoji} {lang_code.upper()}"
+            button = QPushButton(button_text)
+            # Usa el código de idioma como clave
+            button.clicked.connect(lambda _, l=lang_code: self.copy_template(l))
+
+            self.count_labels[lang_code] = QLabel(f"{lang_code.upper()} clicks: 0")
             btn_layout.addWidget(button, i, 0)
-            btn_layout.addWidget(self.count_labels[lang], i, 1)
+            btn_layout.addWidget(self.count_labels[lang_code], i, 1)
 
         main_layout.addWidget(btn_frame)
         self.total_count_lbl = QLabel("Total clicks: 0")
@@ -57,16 +73,23 @@ class EmailSentTab(QWidget):
         main_layout.addWidget(url_group)
 
     def copy_template(self, lang):
-        pyperclip.copy(self.templates[lang])
-        self.click_counts[lang] += 1
-        self.status_label.setText(f"✅ {lang} template copied!")
-        self.update_counters()
-        self.output_message.emit(f"[Email Sent Tab] Copied {lang} template.\n")
+        # AÑADE UNA COMPROBACIÓN POR SI LA PLANTILLA ESTÁ VACÍA
+        if lang in self.templates and self.templates[lang]:
+            # Asume que queremos la primera plantilla para este módulo
+            template_text = self.templates[lang][0] 
+            pyperclip.copy(template_text)
+            self.click_counts[lang] += 1
+            self.status_label.setText(f"✅ {lang.upper()} template copied!")
+            self.update_counters()
+            self.output_message.emit(f"[Email Sent Tab] Copied {lang.upper()} template.\n")
+        else:
+            self.status_label.setText(f"❌ No templates found for {lang.upper()}!")
 
     def update_counters(self):
         for lang, label in self.count_labels.items():
-            label.setText(f"{lang} clicks: {self.click_counts[lang]}")
-        self.total_count_lbl.setText(f"Total clicks: {sum(self.click_counts.values())}")
+            label.setText(f"{lang.upper()} clicks: {self.click_counts.get(lang, 0)}") # Usa .get() por seguridad
+        total_clicks = sum(self.click_counts.values())
+        self.total_count_lbl.setText(f"Total clicks: {total_clicks}")
 
     def save_urls(self):
         content = self.url_textbox.toPlainText().strip()

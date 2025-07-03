@@ -28,6 +28,7 @@ from modules.email_sent import EmailSentTab
 from modules.contacts import SellerFollowupTab
 from modules.metabase import EmailGeneratorTab
 from modules.welcome import WelcomeWindow
+from modules.template_management_tab import TemplateManagementTab
 
 
 class MainWindow(QMainWindow):
@@ -87,7 +88,8 @@ class MainWindow(QMainWindow):
             "Temporal Logs": LogTab,
             "Statistics": StatisticsTab,
             "Instructions": ActionsTab,
-            "HTML2Text": HtmlToTextTab
+            "HTML2Text": HtmlToTextTab,
+            "Templates Manager": TemplateManagementTab
         }
 
         # List of tabs that need a reference to the main window

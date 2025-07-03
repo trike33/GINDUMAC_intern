@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+import random
 
 # --- Seller Follow-up Logic ---
 
@@ -33,7 +34,7 @@ def get_seller_followup_email_generator(csv_path, start_email_str=None):
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File not found: {csv_path}")
 
-    seller_templates = load_templates('templates/seller_templates.json')
+    seller_templates = load_templates('templates/contacts_templates.json')
     start_output = False if start_email_str else True
     
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
@@ -60,6 +61,12 @@ def get_seller_followup_email_generator(csv_path, start_email_str=None):
 
             name = extract_name(email)
             lang = SELLER_COUNTRY_LANG_MAP.get(country.title(), 'en')
+
+            # Selecciona una plantilla aleatoria de la lista para el idioma correcto
+            template_list = seller_templates.get(lang, seller_templates.get('en', ["Template for {name} not found."]))
+            if not template_list: template_list = seller_templates.get('en', ["Template for {name} not found."])
+            template = random.choice(template_list)
+
             template = seller_templates.get(lang, seller_templates['en'])
             message = template.format(name=name)
             
@@ -82,7 +89,7 @@ def get_lead_email_generator(csv_path, price, link, machine):
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File not found: {csv_path}")
 
-    lead_templates = load_templates('templates/lead_templates.json')
+    lead_templates = load_templates('templates/metabase_templates.json')
 
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -103,6 +110,11 @@ def get_lead_email_generator(csv_path, price, link, machine):
             template = lead_templates.get(language, lead_templates['en'])
             name_part = email.split('@')[0].split('.')[0]
             name = name_part.capitalize()
+
+            template_list = lead_templates.get(language, lead_templates.get('en', ["Template for {name} not found."]))
+            if not template_list: template_list = lead_templates.get('en', ["Template for {name} not found."])
+            template = random.choice(template_list)
+
             filled_email = template.format(name=name, machine=machine, price=price, link=link)
 
             yield {
