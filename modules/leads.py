@@ -15,9 +15,18 @@ import pyautogui
 class PasteDetectTextEdit(QTextEdit):
     pasted = pyqtSignal()
     def insertFromMimeData(self, source):
-        super().insertFromMimeData(source)
-        self.pasted.emit()
+        # Anulamos el comportamiento de pegado por defecto para asegurar
+        # que SÓLO se inserte texto plano. Esto previene cualquier error
+        # al pegar texto enriquecido o HTML.
+        if source.hasText():
+            # Insertamos manualmente el texto plano del portapapeles
+            self.insertPlainText(source.text())
 
+        # Ya no llamamos al método "super" porque hemos gestionado el pegado nosotros mismos.
+
+        # Emitimos la señal para iniciar la lógica de procesamiento
+        self.pasted.emit()
+      
 class CorrectionDialog(QDialog):
     def __init__(self, data, parent=None):
         super().__init__(parent)
