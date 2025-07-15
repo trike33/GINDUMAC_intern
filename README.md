@@ -50,9 +50,3 @@ Please note there are 2 different main files, 1 is dedicated to macOS due to spl
 ![](https://github.com/trike33/GINDUMAC_intern/blob/main/repo_img/Screenshot%202025-07-15%20at%2012.04.49.png)
 ![](https://github.com/trike33/GINDUMAC_intern/blob/main/repo_img/Screenshot%202025-07-15%20at%2012.05.31.png)
 ![](https://github.com/trike33/GINDUMAC_intern/blob/main/repo_img/Screenshot%202025-07-15%20at%2012.06.32.png)
-
-{machine}
-
-{price}
-
-{link}
