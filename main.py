@@ -29,7 +29,7 @@ from modules.contacts import SellerFollowupTab
 from modules.metabase import EmailGeneratorTab
 from modules.welcome import WelcomeWindow
 from modules.template_management_tab import TemplateManagementTab
-
+from modules.spreadsheet import DataExtractionTab
 
 class MainWindow(QMainWindow):
     # Signal to notify other widgets when the theme has changed.
@@ -89,7 +89,8 @@ class MainWindow(QMainWindow):
             "Statistics": StatisticsTab,
             "Instructions": ActionsTab,
             "HTML2Text": HtmlToTextTab,
-            "Templates Manager": TemplateManagementTab
+            "Templates Manager": TemplateManagementTab,
+            "Spreadsheet": DataExtractionTab
         }
 
         # List of tabs that need a reference to the main window
