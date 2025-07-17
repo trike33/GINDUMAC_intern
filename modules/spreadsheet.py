@@ -37,10 +37,10 @@ Second, create a more detailed CSV of the technical specifications, formatted sp
     - Rapid feed rate in Z
     - Tool places
 - When the source data combines multiple axes into one line (e.g., "Travel X/Y/Z axis" with a value of "550/320/360 mm"), you must split this into three separate lines in the output, one for each axis (`Travel in X,550,mm`, `Travel in Y,320,mm`, etc.).
+- **Crucially, if a value has a unit like `mm`, `kg`, `°`, or `degrees`, that unit must be placed in the third column. For example, a value of `-10° up to +100°` should be formatted as `NC positioning axis,-10 up to +100,°`.**
 - If a unit is not applicable (e.g., for "Tool places"), leave the unit field blank.
 - Present the entire result as a single block of text, with a blank line separating the data for each model.
 """
-
 
 class DataExtractionTab(QWidget):
     """
