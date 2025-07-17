@@ -22,23 +22,56 @@ First, create a CSV file that lists the machine models. The output must strictly
 
 **2. Technical Specifications CSV:**
 
-Second, create a more detailed CSV of the technical specifications, formatted specifically for the Python data formatter script.
+Second, create a more detailed CSV of the technical specifications. Your primary goal is to map the data from the PDF to the standardized parameter names and units listed below.
 
 - For each machine model, begin with a title line in the format: `Datos [Full Model Name]`.
-- Following each title, list its key technical specifications. Each specification must be on a new line and strictly follow the comma-separated format: `parameter_name,value,unit`.
-- Extract the following key parameters for each model:
-    - Number of spindles
-    - Workpiece Changer (Yes/No)
-    - Travel in X
-    - Travel in Y
-    - Travel in Z
-    - Rapid feed rate in X
-    - Rapid feed rate in Y
-    - Rapid feed rate in Z
-    - Tool places
-- When the source data combines multiple axes into one line (e.g., "Travel X/Y/Z axis" with a value of "550/320/360 mm"), you must split this into three separate lines in the output, one for each axis (`Travel in X,550,mm`, `Travel in Y,320,mm`, etc.).
-- **Crucially, if a value has a unit like `mm`, `kg`, `°`, or `degrees`, that unit must be placed in the third column. For example, a value of `-10° up to +100°` should be formatted as `NC positioning axis,-10 up to +100,°`.**
-- If a unit is not applicable (e.g., for "Tool places"), leave the unit field blank.
+- Following each title, list its technical specifications. Each specification must be on a new line and strictly follow the comma-separated format: `parameter_name,value,unit`.
+
+**MANDATORY PARAMETER MAPPING:**
+
+You MUST map the data from the PDF to one of the following `parameter_name` options, using its corresponding `unit`.
+
+| Parameter Name            | Unit |
+|---------------------------|------|
+| Machine Weight            | kg   |
+| Machine Length            | mm   |
+| Machine Height            | mm   |
+| Machine Depth             | mm   |
+| X-axis travel             | mm   |
+| Z-axis travel             | mm   |
+| Y-axis travel             | mm   |
+| A-axis Min                | º    |
+| A-axis Max                | º    |
+| B-axis Min                | º    |
+| B-axis Max                | º    |
+| C-axis                    | º    |
+| Number of axis            | N/A  |
+| Control Brand             | N/A  |
+| Control Model             | N/A  |
+| Spindle Speed             | RPM  |
+| spindle power             | kW   |
+| taper size                | N/A  |
+| number of tools           | N/A  |
+| Through-spindle coolant   | N/A  |
+| counter spindle           | N/A  |
+| max. bar diameter         | mm   |
+| max. workpiece diameter   | mm   |
+| max. workpiece height     | mm   |
+| table width               | mm   |
+| table length              | mm   |
+| Table load                | kg   |
+| min. wire diameter        | mm   |
+| max. wire diameter        | mm   |
+| max. tool weight          | kg   |
+| driven tools              | N/A  |
+| Positioning Accuracy      | µm   |
+
+**Formatting Rules:**
+
+- If the PDF provides a parameter that is not in the list above, **do not include it**.
+- If a parameter from the list is not in the PDF for a specific model, **do not include that line**.
+- When the source data combines multiple axes into one line (e.g., "Travel X/Y/Z axis" with a value of "550/320/360 mm"), you must split this into three separate lines in the output, one for each axis, using the correct parameter name (e.g., `X-axis travel,550,mm`).
+- If the unit is listed as "N/A", leave the unit field blank in the CSV.
 - Present the entire result as a single block of text, with a blank line separating the data for each model.
 """
 
