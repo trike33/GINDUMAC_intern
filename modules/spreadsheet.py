@@ -460,11 +460,9 @@ class DataExtractionTab(QWidget):
             stripped_line = line.strip() # Strip each line to check if it's effectively empty
             
             if not stripped_line: # If the line is empty or only contains whitespace
-                output_lines.append("") # Preserve the blank line in the output
                 continue # Move to the next line
 
             if stripped_line.startswith("Datos"):
-                if not is_first_title: output_lines.append("")
                 output_lines.append(stripped_line) # Use stripped_line for "Datos" entries
                 current_version_id += 1
                 is_first_title = False
