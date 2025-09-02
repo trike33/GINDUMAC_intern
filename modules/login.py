@@ -175,7 +175,7 @@ class LoginDialog(QDialog):
         username = self.username_edit.text().strip()
         password = self.password_edit.text()
 
-        correct_username = "joanf"
+        correct_username = "gindumac"
         correct_password_hash = "b78a99031c25adef84ee89e2e88137e4"
         entered_password_hash = hashlib.md5(password.encode()).hexdigest()
 
