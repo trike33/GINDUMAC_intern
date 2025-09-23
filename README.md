@@ -7,7 +7,7 @@ A python3 GUI created with PyQt5 designed to automate and aid in the daily tasks
 
 2. Install depenencies specified in the ´requirements.txt´ file: `pip install -r requirements.txt` or `python3 -m pip install -r requirements.txt`.
 
-3. Run the main file, `final_gui_wlcpage.py`. `python3 final_gui_wlcpage.py`.
+3. Run the main file, `main.py`. `python3 main.py`.
 
 # Recommended install
 
