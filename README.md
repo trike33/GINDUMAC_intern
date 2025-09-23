@@ -35,14 +35,10 @@ To set up and activate a virtual environment:
    `python3 -m pip install -r requirements.txt`
 
    Note: When your virtual environment is active, pip and python3 commands will automatically refer to the packages and interpreter within the virtual environment.
- * Run the main file, final_gui_wlcpage.py:
-   `python3 final_gui_wlcpage.py`
+ * Run the main file, main.py:
+   `python3 main.py`
 
 When you're finished working on your project, you can deactivate the virtual environment by simply typing deactivate in your terminal.
-
-# MAIN files
-
-Please note there are 2 different main files, 1 is dedicated to macOS due to split view issues(`main_gui_mac.py`) while the other one is quite generic(works on ubuntu yet don't know if it will work on windows too).
 
 # Some images from the application
 
